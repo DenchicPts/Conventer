@@ -1,0 +1,31 @@
+# Конфигурация приложения
+
+[General]
+app_name = denchic_converter
+command_template = "{app} {tool} {input_file} {output_format}" 
+ # Шаблон для выполнения команды
+
+[Tools]
+ffmpeg = ffmpeg/ffmpeg.exe  
+# Путь к ffmpeg
+imagemagick = imagemagick/convert.exe  
+# Пример другого инструмента (можно добавить больше)
+
+[Formats]
+# Сопоставление форматов входных файлов и возможных выходных форматов
+png = jpg, webp, bmp
+jpg = png, webp
+webp = jpg, png
+mp3 = m4a, wav, aac
+mp4 = avi, mkv, mov
+
+[ToolOptions]
+# Настройки для каждого инструмента и преобразования
+ffmpeg_png_to_jpg = -q:v 2
+ffmpeg_jpg_to_png = -compression_level 2
+ffmpeg_mp3_to_m4a = -acodec aac -b:a 192k
+imagemagick_png_to_bmp = -quality 90
+
+[MenuStructure]
+# Определение структуры меню
+Convert File = ffmpeg, imagemagick  # Главное меню, приложения для выбора
