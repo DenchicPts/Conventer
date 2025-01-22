@@ -2,30 +2,33 @@
 
 [General]
 app_name = denchic_converter
-command_template = "{app} {tool} {input_file} {output_format}" 
- # Шаблон для выполнения команды
+command_template = "{app} {tool} {input_file} {output_format}"
+# Шаблон для выполнения команды
 
 [Tools]
-ffmpeg = ffmpeg/ffmpeg.exe  
-# Путь к ffmpeg
-imagemagick = imagemagick/convert.exe  
-# Пример другого инструмента (можно добавить больше)
+ffmpeg = ffmpeg/ffmpeg.exe
+
 
 [Formats]
-# Сопоставление форматов входных файлов и возможных выходных форматов
-png = jpg, webp, bmp
-jpg = png, webp
-webp = jpg, png
-mp3 = m4a, wav, aac
-mp4 = avi, mkv, mov
+# Основные категории форматов
+image = png, jpg, webp, bmp
+audio = mp3, m4a, wav, aac
+video = mp4, avi, mkv, mov
 
 [ToolOptions]
-# Настройки для каждого инструмента и преобразования
-ffmpeg_png_to_jpg = -q:v 2
-ffmpeg_jpg_to_png = -compression_level 2
-ffmpeg_mp3_to_m4a = -acodec aac -b:a 192k
-imagemagick_png_to_bmp = -quality 90
+# Настройки для ffmpeg
+ffmpeg_image_to_png = -q:v 2
+ffmpeg_image_to_jpg = -compression_level 2
+ffmpeg_audio_to_mp3 = -acodec libmp3lame -b:a 192k
+ffmpeg_audio_to_m4a = -acodec aac -b:a 192k
+ffmpeg_video_to_mp4 = -c:v libx264 -crf 23
+ffmpeg_video_to_mkv = -c:v libx264 -crf 23
+
+# Настройки для ImageMagick (если требуется)
+imagemagick_image_to_bmp = -quality 90
 
 [MenuStructure]
 # Определение структуры меню
-Convert File = ffmpeg, imagemagick  # Главное меню, приложения для выбора
+image = ffmpeg
+audio = ffmpeg
+video = ffmpeg
