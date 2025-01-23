@@ -22,43 +22,49 @@ class RegistryManager:
 
     def add_to_registry(self, categories, tools):
         """
-        Добавляет команды в реестр с использованием SubCommands.
+        Добавляет команды в реестр для каждого формата (например, .png, .mp3)
+        и создаёт вложенные разделы.
         """
         try:
             for category, formats in categories.items():
-                # Путь к категории (например, image, audio, video)
-                category_key_path = rf"SystemFileAssociations\\{category}\\shell\\{self.app_name}"
+                for fmt in formats:
+                    # Путь к формату (например, .png, .mp3)
+                    format_key_path = rf"SystemFileAssociations\\.{fmt}\\shell\\{self.app_name}"
 
-                # Удаляем старые записи
-                self._delete_registry_key(category_key_path, winreg.HKEY_CLASSES_ROOT)
+                    # Удаляем старые записи
+                    self._delete_registry_key(format_key_path, winreg.HKEY_CLASSES_ROOT)
 
-                # Создаем основной раздел для Denchic_Converter
-                with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, category_key_path) as category_key:
-                    winreg.SetValueEx(category_key, "MUIVerb", 0, winreg.REG_SZ, "Convert to")
-                    winreg.SetValueEx(category_key, "SubCommands", 0, winreg.REG_SZ, "")
+                    # Создаём основной раздел для denchic_converter
+                    with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, format_key_path) as format_key:
+                        winreg.SetValueEx(format_key, "MUIVerb", 0, winreg.REG_SZ, "Convert to")
+                        winreg.SetValueEx(format_key, "SubCommands", 0, winreg.REG_SZ, "")
 
-                # Создаем раздел shell внутри Denchic_Converter
-                shell_key_path = rf"{category_key_path}\\shell"
+                    # Создаём раздел shell внутри denchic_converter
+                    shell_key_path = rf"{format_key_path}\\shell"
 
-                with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, shell_key_path) as shell_key:
-                    for tool_name, tool in tools.items():
-                        tool_key_path = rf"{shell_key_path}\\{tool_name}"
+                    with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, shell_key_path) as shell_key:
+                        for tool_name, tool in tools.items():
+                            # Создаём подраздел для программы (например, ffmpeg)
+                            tool_key_path = rf"{shell_key_path}\\{tool_name}"
 
-                        with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, tool_key_path) as tool_key:
-                            winreg.SetValueEx(tool_key, "SubCommands", 0, winreg.REG_SZ, "")
+                            with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, tool_key_path) as tool_key:
+                                winreg.SetValueEx(tool_key, "SubCommands", 0, winreg.REG_SZ, "")
 
-                            # Добавляем форматы файлов
-                            for fmt in formats:
-                                format_key_path = rf"{tool_key_path}\\shell\\{fmt}"
+                                # Добавляем форматы из категории (например, png, jpg для image)
+                                for sub_fmt in categories[category]:
+                                    format_sub_key_path = rf"{tool_key_path}\\shell\\{sub_fmt}"
 
-                                with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, format_key_path) as format_key:
-                                    winreg.SetValueEx(format_key, "MUIVerb", 0, winreg.REG_SZ, f"Convert to {fmt.upper()}")
+                                    with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT,
+                                                          format_sub_key_path) as sub_format_key:
+                                        winreg.SetValueEx(sub_format_key, "MUIVerb", 0, winreg.REG_SZ,
+                                                          f"Convert to {sub_fmt.upper()}")
 
-                                    # Добавляем команду для формата
-                                    command_key_path = rf"{format_key_path}\\command"
-                                    with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, command_key_path) as command_key:
-                                        command = rf'"{os.path.abspath(sys.argv[0])}" {tool_name} "%1" {fmt}'
-                                        winreg.SetValueEx(command_key, "", 0, winreg.REG_SZ, command)
+                                        # Добавляем команду для формата
+                                        command_key_path = rf"{format_sub_key_path}\\command"
+                                        with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT,
+                                                              command_key_path) as command_key:
+                                            command = rf'"{os.path.abspath(sys.argv[0])}" {tool_name} "%1" {sub_fmt}'
+                                            winreg.SetValueEx(command_key, "", 0, winreg.REG_SZ, command)
 
             print(f"Контекстное меню для '{self.app_name}' успешно обновлено!")
         except Exception as e:
